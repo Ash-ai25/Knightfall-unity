@@ -1,0 +1,50 @@
+using UnityEngine;
+
+public abstract class PlayerState : EntityState
+{
+    protected Player player;
+    protected PlayerInputSet input;
+    protected Player_SkillManager skills;
+
+
+
+    public PlayerState(Player player, StateMachine stateMachine, string animBoolName) : base (stateMachine, animBoolName)
+    {
+        this.player = player;
+
+        anim = player.anim;
+        rb = player.rb;
+        input= player.input;
+        stats = player.stats;
+        skills = player.skillManager;
+    }
+
+    public override void Update()
+    {
+        base.Update();
+        anim.SetFloat("yVelocity", rb.linearVelocity.y);
+        if (input.Player.Dash.WasPressedThisFrame() && CanDash())
+        {
+            skills.dash.SetSkillOnCooldown();
+            stateMachine.ChangeState(player.dashState);
+        }
+    }
+
+    private bool CanDash()
+    {
+        if (skills.dash.CanUseSkill() == false)
+        {
+            return false;
+        }
+        if (player.wallDetected)
+        {
+            return false;
+        }
+        if (stateMachine.currentState == player.dashState)
+        {
+            return false;
+        }
+        return true;
+    }
+    
+}
